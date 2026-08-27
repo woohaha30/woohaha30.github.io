@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>정보보안기사 오답노트</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans-serif;background:#f5f5f5;color:#1a1a1a;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:12px}
+.header{text-align:center;padding:16px 0 12px;margin-bottom:4px}
+.header h1{font-size:17px;font-weight:600;color:#1a1a1a}
+.header p{font-size:12px;color:#888;margin-top:3px}
+.tab-bar{display:flex;gap:4px;margin-bottom:14px;background:#e8e8e8;padding:4px;border-radius:10px}
+.tab{flex:1;padding:8px 4px;font-size:12px;font-weight:500;border:none;background:transparent;border-radius:7px;cursor:pointer;color:#666;transition:all .15s}
+.tab.active{background:#fff;color:#1a1a1a;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.section{display:none}.section.active{display:block}
+
+.form-group{margin-bottom:11px}
+.form-group label{display:block;font-size:12px;color:#555;margin-bottom:5px;font-weight:500}
+.form-group select,.form-group input,.form-group textarea{width:100%;font-size:14px;padding:9px 11px;border:1px solid #ddd;border-radius:9px;background:#fff;color:#1a1a1a;resize:none;-webkit-appearance:none;outline:none}
+.form-group select:focus,.form-group input:focus,.form-group textarea:focus{border-color:#5b5fc7}
+.form-group textarea{min-height:68px;line-height:1.5}
+.choices-wrap{display:flex;flex-direction:column;gap:7px}
+.choice-row{display:flex;gap:6px;align-items:center}
+.choice-row input[type=text]{flex:1;font-size:13px;padding:8px 10px;border:1px solid #ddd;border-radius:9px;background:#fff;color:#1a1a1a;outline:none}
+.choice-row input[type=text]:focus{border-color:#5b5fc7}
+.correct-select{width:52px;font-size:12px;padding:8px 4px;border:1px solid #ddd;border-radius:9px;background:#fff;color:#1a1a1a;-webkit-appearance:none;text-align:center;outline:none}
+.correct-select.selected{border-color:#22a060;background:#eafaf1;color:#22a060;font-weight:600}
+.btn-save{width:100%;padding:12px;font-size:15px;font-weight:600;background:#5b5fc7;border:none;border-radius:10px;cursor:pointer;color:#fff;margin-top:6px;transition:background .15s}
+.btn-save:active{background:#4a4eb5}
+
+.filter-bar{display:flex;gap:6px;margin-bottom:10px}
+.filter-bar select{font-size:12px;padding:7px 9px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#1a1a1a;flex:1;-webkit-appearance:none;outline:none}
+.empty{text-align:center;padding:40px 0;color:#aaa;font-size:13px;line-height:1.8}
+.q-card{background:#fff;border:1px solid #eee;border-radius:13px;padding:13px;margin-bottom:8px}
+.q-card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px}
+.q-meta{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.badge{font-size:11px;padding:3px 9px;border-radius:20px;font-weight:600}
+.badge-part{background:#ede9fe;color:#5b5fc7}
+.badge-wrong{background:#fee2e2;color:#dc2626}
+.q-title{font-size:13px;font-weight:500;color:#1a1a1a;line-height:1.55}
+.q-actions{display:flex;gap:5px;flex-shrink:0}
+.btn-sm{font-size:11px;padding:5px 10px;border:1px solid #ddd;border-radius:7px;background:#fff;cursor:pointer;color:#555;white-space:nowrap;transition:background .15s}
+.btn-sm:active{background:#f0f0f0}
+.btn-sm.danger{color:#dc2626;border-color:#fca5a5}
+.q-detail{margin-top:9px;padding-top:9px;border-top:1px solid #f0f0f0;font-size:12px;color:#555;line-height:1.6}
+.q-choices{display:flex;flex-direction:column;gap:4px;margin-bottom:6px}
+.q-choice{font-size:12px;padding:4px 0;color:#555}
+.q-choice.correct{color:#22a060;font-weight:600}
+.explain-box{background:#f8f8f8;border-radius:8px;padding:8px 10px;font-size:12px;color:#555;line-height:1.6;margin-top:6px}
+.img-upload-area{border:1.5px dashed #ddd;border-radius:10px;padding:16px;text-align:center;cursor:pointer;background:#fafafa;transition:border-color .15s;position:relative}
+.img-upload-area:hover{border-color:#5b5fc7}
+.img-upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.img-upload-area p{font-size:13px;color:#aaa;pointer-events:none}
+.img-preview{margin-top:8px;position:relative;display:inline-block}
+.img-preview img{max-width:100%;border-radius:8px;border:1px solid #eee;display:block}
+.img-del{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:50%;width:24px;height:24px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
+.q-img{max-width:100%;border-radius:8px;border:1px solid #eee;display:block;margin-bottom:8px}
+
+.quiz-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.quiz-progress{font-size:13px;color:#888}
+.progress-bar{height:4px;background:#eee;border-radius:99px;margin-bottom:14px;overflow:hidden}
+.progress-fill{height:100%;background:#5b5fc7;border-radius:99px;transition:width .3s}
+.quiz-card{background:#fff;border:1px solid #eee;border-radius:13px;padding:14px;margin-bottom:10px}
+.quiz-q{font-size:14px;font-weight:500;line-height:1.6;margin-bottom:13px;color:#1a1a1a}
+.quiz-choices{display:flex;flex-direction:column;gap:8px}
+.quiz-choice{padding:10px 13px;border:1px solid #ddd;border-radius:10px;font-size:13px;cursor:pointer;background:#fff;color:#1a1a1a;text-align:left;transition:all .15s;line-height:1.45;width:100%}
+.quiz-choice:hover:not(:disabled){background:#f5f5f5;border-color:#bbb}
+.quiz-choice.correct{background:#eafaf1;border-color:#22a060;color:#22a060;font-weight:500}
+.quiz-choice.wrong{background:#fee2e2;border-color:#dc2626;color:#dc2626}
+.quiz-feedback{margin-top:10px;padding:10px 12px;background:#f8f8f8;border-radius:9px;font-size:12px;line-height:1.7;color:#555}
+.feedback-result{font-size:13px;font-weight:600;margin-bottom:4px}
+.feedback-result.ok{color:#22a060}.feedback-result.no{color:#dc2626}
+.btn-next{width:100%;padding:11px;font-size:14px;font-weight:600;background:#5b5fc7;border:none;border-radius:10px;cursor:pointer;color:#fff;margin-top:8px}
+.btn-next:active{background:#4a4eb5}
+.quiz-empty{text-align:center;padding:40px 0;color:#aaa;font-size:13px;line-height:1.8}
+.quiz-done{text-align:center;padding:28px 0}
+.score-circle{width:88px;height:88px;border-radius:50%;background:#ede9fe;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 14px}
+.score-num{font-size:26px;font-weight:700;color:#5b5fc7}
+.score-total{font-size:11px;color:#888}
+.quiz-done h3{font-size:16px;font-weight:600;margin-bottom:6px}
+.quiz-done p{font-size:13px;color:#888;margin-bottom:18px}
+.btn-restart{padding:10px 28px;font-size:13px;font-weight:600;background:#5b5fc7;border:none;border-radius:10px;cursor:pointer;color:#fff}
+
+.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px}
+.stat-card{background:#fff;border:1px solid #eee;border-radius:12px;padding:13px}
+.stat-label{font-size:11px;color:#888;margin-bottom:5px;font-weight:500}
+.stat-value{font-size:24px;font-weight:700;color:#1a1a1a}
+.section-title{font-size:12px;font-weight:600;color:#888;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px}
+.part-rows{background:#fff;border:1px solid #eee;border-radius:12px;overflow:hidden;margin-bottom:16px}
+.part-row{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;font-size:13px;border-bottom:1px solid #f0f0f0}
+.part-row:last-child{border-bottom:none}
+.part-name{color:#555}
+.part-count{font-weight:600;color:#1a1a1a}
+.top-list{background:#fff;border:1px solid #eee;border-radius:12px;overflow:hidden}
+.top-item{display:flex;justify-content:space-between;align-items:flex-start;padding:10px 14px;border-bottom:1px solid #f0f0f0;gap:10px}
+.top-item:last-child{border-bottom:none}
+.top-q{font-size:12px;color:#1a1a1a;line-height:1.5;flex:1}
+.top-cnt{font-size:12px;font-weight:700;color:#dc2626;white-space:nowrap}
+.no-top{text-align:center;padding:16px;color:#aaa;font-size:12px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>정보보안기사 오답노트</h1>
+    <p>틀린 문제를 모아서 반복 학습하자</p>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab active" onclick="switchTab('add')">추가</button>
+    <button class="tab" onclick="switchTab('list')">목록</button>
+    <button class="tab" onclick="switchTab('quiz')">재시험</button>
+    <button class="tab" onclick="switchTab('stat')">통계</button>
+  </div>
+
+  <!-- 추가 -->
+  <div class="section active" id="sec-add">
+    <div class="form-group">
+      <label>파트 선택</label>
+      <select id="f-part">
+        <option value="PART 01">PART 01 시스템 보안</option>
+        <option value="PART 02">PART 02 네트워크 보안</option>
+        <option value="PART 03">PART 03 애플리케이션 보안</option>
+        <option value="PART 04">PART 04 정보보안 일반</option>
+        <option value="PART 05">PART 05 관리 및 법규</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>문제</label>
+      <textarea id="f-question" placeholder="문제를 입력하세요"></textarea>
+    </div>
+    <div class="form-group">
+      <label>보기 (정답 번호에 ✓ 표시)</label>
+      <div class="choices-wrap" id="choices-wrap"></div>
+    </div>
+    <div class="form-group">
+      <label>문제 이미지 (선택)</label>
+      <div class="img-upload-area" id="upload-area">
+        <input type="file" accept="image/*" onchange="handleImg(event)">
+        <p>이미지를 탭해서 추가</p>
+      </div>
+      <div class="img-preview" id="img-preview" style="display:none">
+        <img id="img-preview-src" src="">
+        <button class="img-del" onclick="removeImg()">×</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>해설 (선택)</label>
+      <textarea id="f-explain" placeholder="해설을 입력하세요"></textarea>
+    </div>
+    <button class="btn-save" onclick="saveQ()">저장하기</button>
+  </div>
+
+  <!-- 목록 -->
+  <div class="section" id="sec-list">
+    <div class="filter-bar">
+      <select id="filter-part" onchange="renderList()">
+        <option value="">전체 파트</option>
+        <option value="PART 01">PART 01</option>
+        <option value="PART 02">PART 02</option>
+        <option value="PART 03">PART 03</option>
+        <option value="PART 04">PART 04</option>
+        <option value="PART 05">PART 05</option>
+      </select>
+      <select id="filter-sort" onchange="renderList()">
+        <option value="new">최신순</option>
+        <option value="wrong">틀린 횟수순</option>
+      </select>
+    </div>
+    <div id="list-wrap"></div>
+  </div>
+
+  <!-- 재시험 -->
+  <div class="section" id="sec-quiz">
+    <div id="quiz-wrap"></div>
+  </div>
+
+  <!-- 통계 -->
+  <div class="section" id="sec-stat">
+    <div id="stat-wrap"></div>
+  </div>
+</div>
+
+<script>
+let DB = JSON.parse(localStorage.getItem('jinote_v2') || '[]');
+let quizList = [], quizIdx = 0, quizAnswered = false;
+
+function save() { localStorage.setItem('jinote_v2', JSON.stringify(DB)); }
+
+function buildChoices() {
+  const w = document.getElementById('choices-wrap');
+  w.innerHTML = '';
+  for (let i = 1; i <= 4; i++) {
+    const row = document.createElement('div');
+    row.className = 'choice-row';
+    row.innerHTML = `
+      <span style="font-size:13px;font-weight:600;color:#5b5fc7;min-width:18px;text-align:center">${i}</span>
+      <input type="text" placeholder="보기 입력" id="c${i}">
+      <select class="correct-select" id="cs${i}" onchange="markCorrect(${i})">
+        <option value="">-</option>
+        <option value="${i}">✓</option>
+      </select>`;
+    w.appendChild(row);
+  }
+}
+let currentImg = '';
+
+function handleImg(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    currentImg = ev.target.result;
+    document.getElementById('img-preview-src').src = currentImg;
+    document.getElementById('img-preview').style.display = 'inline-block';
+    document.getElementById('upload-area').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeImg() {
+  currentImg = '';
+  document.getElementById('img-preview').style.display = 'none';
+  document.getElementById('upload-area').style.display = 'block';
+}
+
+buildChoices();
+
+function markCorrect(n) {
+  for (let i = 1; i <= 4; i++) {
+    const s = document.getElementById('cs'+i);
+    if (i !== n) s.value = '';
+    s.className = 'correct-select' + (s.value ? ' selected' : '');
+  }
+  document.getElementById('cs'+n).className = 'correct-select' + (document.getElementById('cs'+n).value ? ' selected' : '');
+}
+
+function saveQ() {
+  const q = document.getElementById('f-question').value.trim();
+  if (!q) { alert('문제를 입력하세요'); return; }
+  const choices = [];
+  let ans = '';
+  for (let i = 1; i <= 4; i++) {
+    const v = document.getElementById('c'+i).value.trim();
+    if (v) choices.push({n: i, text: v});
+    if (document.getElementById('cs'+i).value === String(i)) ans = String(i);
+  }
+  if (choices.length < 2) { alert('보기를 2개 이상 입력하세요'); return; }
+  if (!ans) { alert('정답을 선택하세요 (✓ 표시)'); return; }
+  DB.push({
+    id: Date.now(),
+    part: document.getElementById('f-part').value,
+    q, choices, ans,
+    explain: document.getElementById('f-explain').value.trim(),
+    img: currentImg || '',
+    wrong: 0
+  });
+  save();
+  document.getElementById('f-question').value = '';
+  document.getElementById('f-explain').value = '';
+  currentImg = '';
+  document.getElementById('img-preview').style.display = 'none';
+  document.getElementById('upload-area').style.display = 'block';
+  buildChoices();
+  alert('저장됐어! 목록에서 확인해봐 👍');
+}
+
+function switchTab(t) {
+  document.querySelectorAll('.tab').forEach((b, i) => {
+    b.classList.toggle('active', ['add','list','quiz','stat'][i] === t);
+  });
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec-'+t).classList.add('active');
+  if (t === 'list') renderList();
+  if (t === 'quiz') startQuiz();
+  if (t === 'stat') renderStat();
+}
+
+function renderList() {
+  const wrap = document.getElementById('list-wrap');
+  const fp = document.getElementById('filter-part').value;
+  const fs = document.getElementById('filter-sort').value;
+  let data = fp ? DB.filter(d => d.part === fp) : [...DB];
+  if (fs === 'wrong') data.sort((a, b) => b.wrong - a.wrong);
+  else data.sort((a, b) => b.id - a.id);
+  if (!data.length) {
+    wrap.innerHTML = '<div class="empty">저장된 오답이 없어<br>추가 탭에서 문제를 입력해봐</div>';
+    return;
+  }
+  wrap.innerHTML = data.map(d => `
+    <div class="q-card">
+      <div class="q-card-top">
+        <div class="q-meta">
+          <span class="badge badge-part">${d.part.replace('PART ','P')}</span>
+          ${d.wrong > 0 ? `<span class="badge badge-wrong">틀림 ${d.wrong}회</span>` : ''}
+        </div>
+        <div class="q-actions">
+          <button class="btn-sm" onclick="toggleDetail('qd${d.id}',this)">보기</button>
+          <button class="btn-sm danger" onclick="deleteQ(${d.id})">삭제</button>
+        </div>
+      </div>
+      ${d.img ? `<img class="q-img" src="${d.img}">` : ''}
+      <div class="q-title">${d.q}</div>
+      <div class="q-detail" id="qd${d.id}" style="display:none">
+        <div class="q-choices">
+          ${d.choices.map(c => `<div class="q-choice${c.n == d.ans ? ' correct' : ''}">${c.n}. ${c.text}${c.n == d.ans ? ' ✓' : ''}</div>`).join('')}
+        </div>
+        ${d.explain ? `<div class="explain-box"><strong>해설:</strong> ${d.explain}</div>` : ''}
+      </div>
+    </div>`).join('');
+}
+
+function toggleDetail(id, btn) {
+  const el = document.getElementById(id);
+  const open = el.style.display === 'none';
+  el.style.display = open ? 'block' : 'none';
+  btn.textContent = open ? '닫기' : '보기';
+}
+
+function deleteQ(id) {
+  if (!confirm('이 문제를 삭제할까?')) return;
+  DB = DB.filter(d => d.id !== id);
+  save(); renderList();
+}
+
+function startQuiz() {
+  quizList = [...DB].sort(() => Math.random() - 0.5);
+  quizIdx = 0; quizAnswered = false;
+  renderQuiz();
+}
+
+function renderQuiz() {
+  const wrap = document.getElementById('quiz-wrap');
+  if (!quizList.length) {
+    wrap.innerHTML = '<div class="quiz-empty">저장된 오답이 없어<br>추가 탭에서 먼저 문제를 입력해봐</div>';
+    return;
+  }
+  if (quizIdx >= quizList.length) {
+    const correct = quizList.filter(q => q._r === 'o').length;
+    const pct = Math.round(correct / quizList.length * 100);
+    wrap.innerHTML = `
+      <div class="quiz-done">
+        <div class="score-circle">
+          <div class="score-num">${correct}</div>
+          <div class="score-total">/ ${quizList.length}</div>
+        </div>
+        <h3>정답률 ${pct}%</h3>
+        <p>${pct >= 70 ? '잘하고 있어! 계속 반복하자 💪' : '틀린 문제 다시 확인해봐!'}</p>
+        <button class="btn-restart" onclick="startQuiz()">다시 풀기</button>
+      </div>`;
+    return;
+  }
+  const d = quizList[quizIdx];
+  const pct = Math.round(quizIdx / quizList.length * 100);
+  wrap.innerHTML = `
+    <div class="quiz-header">
+      <span class="quiz-progress">${quizIdx + 1} / ${quizList.length}</span>
+      <span class="badge badge-part">${d.part.replace('PART ', 'P')}</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <div class="quiz-card">
+      ${d.img ? `<img style="max-width:100%;border-radius:8px;border:1px solid #eee;display:block;margin-bottom:10px" src="${d.img}">` : ''}
+      <div class="quiz-q">${d.q}</div>
+      <div class="quiz-choices">
+        ${d.choices.map(c => `<button class="quiz-choice" onclick="answerQuiz(${c.n},${d.ans},${d.id})" data-n="${c.n}">${c.n}. ${c.text}</button>`).join('')}
+      </div>
+      <div id="qc-feedback" style="display:none"></div>
+    </div>`;
+}
+
+function answerQuiz(chosen, ans, id) {
+  if (quizAnswered) return;
+  quizAnswered = true;
+  const correct = String(chosen) === String(ans);
+  document.querySelectorAll('.quiz-choice').forEach(b => {
+    b.disabled = true;
+    if (parseInt(b.dataset.n) === parseInt(ans)) b.classList.add('correct');
+    else if (parseInt(b.dataset.n) === chosen && !correct) b.classList.add('wrong');
+  });
+  if (!correct) {
+    const orig = DB.find(x => x.id === id);
+    if (orig) { orig.wrong++; save(); }
+    quizList[quizIdx]._r = 'x';
+  } else {
+    quizList[quizIdx]._r = 'o';
+  }
+  const d = quizList[quizIdx];
+  const fb = document.getElementById('qc-feedback');
+  fb.style.display = 'block';
+  fb.innerHTML = `
+    <div class="quiz-feedback">
+      <div class="feedback-result ${correct ? 'ok' : 'no'}">${correct ? '✓ 정답!' : '✗ 오답 — 정답: ' + ans + '번'}</div>
+      ${d.explain ? d.explain : ''}
+    </div>
+    <button class="btn-next" onclick="nextQuiz()">${quizIdx + 1 < quizList.length ? '다음 문제 →' : '결과 보기'}</button>`;
+}
+
+function nextQuiz() { quizIdx++; quizAnswered = false; renderQuiz(); }
+
+function renderStat() {
+  const wrap = document.getElementById('stat-wrap');
+  if (!DB.length) {
+    wrap.innerHTML = '<div class="empty">아직 데이터가 없어<br>문제를 추가해봐</div>';
+    return;
+  }
+  const total = DB.length;
+  const totalWrong = DB.reduce((s, d) => s + d.wrong, 0);
+  const partMap = {};
+  DB.forEach(d => { partMap[d.part] = (partMap[d.part] || 0) + 1; });
+  const top = [...DB].sort((a, b) => b.wrong - a.wrong).filter(d => d.wrong > 0).slice(0, 5);
+  wrap.innerHTML = `
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-label">총 오답 문제</div><div class="stat-value">${total}</div></div>
+      <div class="stat-card"><div class="stat-label">누적 틀린 횟수</div><div class="stat-value">${totalWrong}</div></div>
+    </div>
+    <div class="section-title">파트별 오답 수</div>
+    <div class="part-rows">
+      ${['PART 01','PART 02','PART 03','PART 04','PART 05'].map(p => `
+        <div class="part-row">
+          <span class="part-name">${p}</span>
+          <span class="part-count">${partMap[p] || 0}문제</span>
+        </div>`).join('')}
+    </div>
+    <div class="section-title">많이 틀린 문제 TOP 5</div>
+    <div class="top-list">
+      ${top.length ? top.map(d => `
+        <div class="top-item">
+          <div class="top-q">${d.q.length > 45 ? d.q.slice(0, 45) + '...' : d.q}</div>
+          <div class="top-cnt">${d.wrong}회</div>
+        </div>`).join('') : '<div class="no-top">아직 틀린 문제가 없어 👍</div>'}
+    </div>`;
+}
+</script>
+</body>
+</html>

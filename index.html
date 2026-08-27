@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>어서와</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; }
+
+  header { background: #1e2330; border-bottom: 1px solid #2d3548; padding: 0 24px; height: 60px; display: flex; align-items: center; position: sticky; top: 0; z-index: 100; }
+  .header-logo { font-size: 20px; margin-right: 10px; }
+  .header-title { font-size: 16px; font-weight: 700; color: #f1f5f9; }
+
+  .tab-nav { background: #1a1f2e; border-bottom: 1px solid #2d3548; display: flex; padding: 0 24px; gap: 4px; overflow-x: auto; }
+  .tab-btn { padding: 14px 18px; background: none; border: none; border-bottom: 2px solid transparent; color: #64748b; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; font-family: inherit; white-space: nowrap; }
+  .tab-btn:hover { color: #94a3b8; }
+  .tab-btn.active { color: #3b82f6; border-bottom-color: #3b82f6; }
+
+  .tab-content { display: none; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  .tab-content.active { display: block; }
+
+  .cat-nav { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .cat-btn { padding: 8px 18px; background: #1e2330; border: 1px solid #2d3548; border-radius: 20px; color: #94a3b8; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+  .cat-btn:hover { border-color: #3b82f6; color: #60a5fa; }
+  .cat-btn.active { background: #1d3a6e; border-color: #3b82f6; color: #60a5fa; }
+  .cert-btn:hover { border-color: #10b981; color: #34d399; }
+  .cert-btn.active { background: #064e3b; border-color: #10b981; color: #34d399; }
+  .isms-btn:hover { border-color: #f59e0b; color: #fbbf24; }
+  .isms-btn.active { background: #451a03; border-color: #f59e0b; color: #fbbf24; }
+
+  .search-bar { display: flex; gap: 10px; margin-bottom: 20px; }
+  .search-bar input { flex: 1; padding: 11px 16px; background: #1e2330; border: 1px solid #2d3548; border-radius: 8px; color: #e2e8f0; font-size: 14px; outline: none; transition: border-color 0.2s; font-family: inherit; }
+  .search-bar input:focus { border-color: #3b82f6; }
+
+  .upload-guide { background: #1e2330; border: 1px dashed #2d3548; border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; font-size: 13px; color: #64748b; line-height: 2; }
+  .upload-guide a { color: #3b82f6; text-decoration: none; }
+  .upload-guide a:hover { text-decoration: underline; }
+  .upload-guide code { background: #0f1117; border: 1px solid #2d3548; border-radius: 4px; padding: 1px 7px; color: #60a5fa; font-size: 12px; }
+
+  .file-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+  .file-card { background: #1e2330; border: 1px solid #2d3548; border-radius: 10px; padding: 18px; cursor: pointer; transition: all 0.2s; }
+  .file-card:hover { border-color: #3b82f6; background: #1e2a40; transform: translateY(-2px); }
+  .file-card.cert:hover { border-color: #10b981; background: #1a2e25; }
+  .file-card.isms-card:hover { border-color: #f59e0b; background: #1c1500; }
+  .file-icon { font-size: 28px; margin-bottom: 10px; }
+  .file-name { font-size: 14px; font-weight: 600; color: #f1f5f9; margin-bottom: 6px; word-break: break-all; line-height: 1.5; }
+  .file-meta { font-size: 12px; color: #64748b; }
+  .file-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-top: 8px; background: #1d3a6e; color: #60a5fa; }
+  .file-tag.cert { background: #064e3b; color: #34d399; }
+  .file-tag.isms { background: #451a03; color: #fbbf24; }
+
+  .empty-state { text-align: center; padding: 60px 20px; color: #64748b; grid-column: 1 / -1; }
+  .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; line-height: 1.8; }
+
+  /* 법령 */
+  .law-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; margin-bottom: 24px; }
+  .law-card { background: #1e2330; border: 1px solid #2d3548; border-radius: 10px; padding: 20px; transition: all 0.2s; }
+  .law-card:hover { border-color: #10b981; background: #1a2e25; transform: translateY(-2px); }
+  .law-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+  .law-badge { padding: 3px 10px; background: #064e3b; color: #34d399; border-radius: 5px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+  .law-name { font-size: 15px; font-weight: 700; color: #f1f5f9; }
+  .law-desc { font-size: 13px; color: #94a3b8; line-height: 1.6; margin-bottom: 12px; }
+  .law-links { display: flex; gap: 8px; flex-wrap: wrap; }
+  .law-link { display: inline-flex; align-items: center; padding: 6px 12px; background: #064e3b; border: 1px solid #065f46; border-radius: 6px; color: #34d399; text-decoration: none; font-size: 12px; font-weight: 600; transition: all 0.2s; }
+  .law-link:hover { background: #065f46; }
+  .law-link.decree { background: #1a1f2e; border-color: #2d3548; color: #94a3b8; }
+  .law-link.decree:hover { border-color: #10b981; color: #34d399; }
+
+  .section-title { font-size: 18px; font-weight: 700; color: #f1f5f9; margin-bottom: 20px; }
+  .fullpage-box { background: #1e2330; border: 1px solid #2d3548; border-radius: 10px; padding: 20px; margin-top: 16px; }
+  .fullpage-box p { font-size: 14px; font-weight: 700; color: #f1f5f9; margin-bottom: 8px; }
+  .fullpage-box p.sub { font-size: 13px; color: #94a3b8; font-weight: 400; margin-bottom: 14px; }
+  .link-row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  /* ISMS 결함 관리 */
+  .isms-info-box { background: #1c1a00; border: 1px solid #f59e0b33; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+  .isms-info-box h3 { font-size: 15px; font-weight: 700; color: #fbbf24; margin-bottom: 10px; }
+  .isms-info-box p { font-size: 13px; color: #94a3b8; line-height: 1.8; }
+  .isms-info-box a { color: #3b82f6; text-decoration: none; }
+  .isms-info-box a:hover { text-decoration: underline; }
+
+  .claude-tip-box { background: #0f172a; border: 1px solid #3b82f633; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+  .claude-tip-box h3 { font-size: 14px; font-weight: 700; color: #60a5fa; margin-bottom: 12px; }
+  .claude-tip-box p { font-size: 13px; color: #94a3b8; line-height: 1.7; margin-bottom: 12px; }
+  .claude-tip-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .claude-quick-btn { padding: 8px 14px; background: #1d3a6e; border: 1px solid #3b82f6; border-radius: 6px; color: #60a5fa; font-size: 12px; font-weight: 600; cursor: pointer; text-decoration: none; transition: all 0.2s; display: inline-block; font-family: inherit; }
+  .claude-quick-btn:hover { background: #2d4a8e; }
+
+  @media (max-width: 600px) {
+    header { padding: 0 16px; }
+    .tab-content { padding: 16px; }
+    .tab-btn { padding: 12px 12px; font-size: 12px; }
+    .law-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="header-logo">🛡️</span>
+  <span class="header-title">어서와</span>
+</header>
+
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="showTab('docs', this)">📁 업무 문서</button>
+  <button class="tab-btn" onclick="showTab('law', this)">⚖️ 법령 검색</button>
+  <button class="tab-btn" onclick="showTab('isms', this)">🔍 ISMS 결함 관리</button>
+  <button class="tab-btn" onclick="showTab('fine', this)">💰 과태료/벌칙</button>
+  <button class="tab-btn" onclick="showTab('cert', this)">🎓 자격증</button>
+</div>
+
+<!-- 탭1: 업무 문서 -->
+<div class="tab-content active" id="tab-docs">
+  <div class="cat-nav">
+    <button class="cat-btn active" onclick="selectDocCat('전체', this)">📂 전체</button>
+    <button class="cat-btn" onclick="selectDocCat('개인정보보호', this)">🔒 개인정보보호</button>
+    <button class="cat-btn" onclick="selectDocCat('정보보호정책', this)">📋 정보보호정책</button>
+    <button class="cat-btn" onclick="selectDocCat('기타', this)">📌 기타</button>
+  </div>
+  <div class="search-bar">
+    <input type="text" id="doc-search" placeholder="문서명으로 검색..." oninput="filterDocs()">
+  </div>
+  <div class="upload-guide">
+    💡 GitHub 해당 폴더에 파일을 업로드하면 자동으로 목록에 나타납니다. (30초~1분 소요)<br>
+    👉 <a href="https://github.com/woohaha30/woohaha30.github.io" target="_blank">GitHub 저장소 바로가기 →</a>
+  </div>
+  <div class="file-grid" id="doc-file-grid">
+    <div class="empty-state"><div class="icon">⏳</div><p>불러오는 중...</p></div>
+  </div>
+</div>
+
+<!-- 탭2: 법령 검색 -->
+<div class="tab-content" id="tab-law">
+  <div class="section-title">⚖️ 관련 법령</div>
+  <div class="search-bar">
+    <input type="text" id="law-search" placeholder="법령명 또는 키워드 검색..." oninput="filterLaws()">
+  </div>
+  <div class="law-grid" id="law-grid"></div>
+  <div class="fullpage-box">
+    <p>🔍 법령 전문 검색 (law.go.kr)</p>
+    <p class="sub">직접 조항을 찾고 싶을 때 사용하세요</p>
+    <div class="link-row">
+      <a href="https://www.law.go.kr/법령/개인정보보호법" target="_blank" class="law-link">개인정보보호법 →</a>
+      <a href="https://www.law.go.kr/법령/정보통신망이용촉진및정보보호등에관한법률" target="_blank" class="law-link">정보통신망법 →</a>
+      <a href="https://www.law.go.kr/법령/신용정보의이용및보호에관한법률" target="_blank" class="law-link">신용정보법 →</a>
+      <a href="https://www.law.go.kr/법령/전자금융거래법" target="_blank" class="law-link">전자금융거래법 →</a>
+    </div>
+  </div>
+
+  <div class="fullpage-box" style="margin-top:16px;">
+    <p>🏛️ 유관기관 바로가기</p>
+    <p class="sub">자주 방문하는 기관 사이트를 바로 열어보세요</p>
+    <div class="link-row">
+      <a href="https://www.pipc.go.kr/np/cop/bbs/selectBoardList.do?bbsId=BS074&mCode=C020010000" target="_blank" class="law-link">📢 개인정보보호위원회 보도자료 →</a>
+      <a href="https://www.pipc.go.kr" target="_blank" class="law-link">🏛️ 개인정보보호위원회 →</a>
+      <a href="https://www.kisa.or.kr/402" target="_blank" class="law-link">📢 KISA 보도자료 →</a>
+      <a href="https://www.kisa.or.kr" target="_blank" class="law-link">🔐 KISA →</a>
+      <a href="https://www.fsec.or.kr" target="_blank" class="law-link">💰 금융보안원 →</a>
+      <a href="https://www.kisia.or.kr" target="_blank" class="law-link">🛡️ 한국정보보호산업협회 →</a>
+    </div>
+  </div>
+</div>
+
+<!-- 탭3: ISMS 결함 관리 -->
+<div class="tab-content" id="tab-isms">
+  <div class="cat-nav">
+    <button class="cat-btn isms-btn active" onclick="selectIsmsCat('결함문서', this)">📄 결함 문서</button>
+    <button class="cat-btn isms-btn" onclick="selectIsmsCat('조치가이드', this)">🔧 조치 가이드</button>
+  </div>
+
+  <div class="claude-tip-box">
+    <h3>🤖 AI 조치 방법 조언 받기</h3>
+    <p>결함 항목을 AI에게 물어보면 관련 법령 조항과 함께 구체적인 조치 방법을 알려줘요.<br>아래에서 사용할 AI를 선택하고 질문 버튼을 클릭하세요.</p>
+    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+      <button onclick="setAI('claude')" id="ai-claude-btn" style="padding:7px 18px;border-radius:6px;border:2px solid #f97316;background:#2d1500;color:#fb923c;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">🔶 Claude (로드)</button>
+      <button onclick="setAI('gemini')" id="ai-gemini-btn" style="padding:7px 18px;border-radius:6px;border:2px solid #2d3548;background:#1e2330;color:#64748b;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">🔷 Gemini (젬미니)</button>
+    </div>
+    <div class="claude-tip-btns">
+      <a class="claude-quick-btn" href="#" target="_blank" onclick="return goAI(this, 'ISMS 결함 접근통제 조치방법을 관련 법령 조항과 함께 설명해줘')">접근통제 결함 조치방법</a>
+      <a class="claude-quick-btn" href="#" target="_blank" onclick="return goAI(this, 'ISMS 결함 암호화 조치방법을 관련 법령 조항과 함께 설명해줘')">암호화 결함 조치방법</a>
+      <a class="claude-quick-btn" href="#" target="_blank" onclick="return goAI(this, 'ISMS 결함 접속기록 관리 조치방법을 관련 법령 조항과 함께 설명해줘')">접속기록 결함 조치방법</a>
+      <a class="claude-quick-btn" href="#" target="_blank" onclick="return goAI(this, 'ISMS 결함 개인정보 수집 동의 조치방법을 관련 법령 조항과 함께 설명해줘')">개인정보 수집·동의 결함</a>
+      <a class="claude-quick-btn" href="#" target="_blank" onclick="return goAI(this, 'ISMS 결함 위험관리 조치방법을 관련 법령 조항과 함께 설명해줘')">위험관리 결함 조치방법</a>
+    </div>
+  </div>
+
+  <div class="upload-guide">
+    💡 GitHub <code>isms결함관리/</code> 폴더에 파일을 업로드하면 자동으로 목록에 나타납니다.<br>
+    👉 <a href="https://github.com/woohaha30/woohaha30.github.io" target="_blank">GitHub 저장소 바로가기 →</a>
+  </div>
+
+  <div id="isms-content">
+    <div class="file-grid" id="isms-file-grid">
+      <div class="empty-state"><div class="icon">⏳</div><p>불러오는 중...</p></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- 탭4: 과태료/벌칙 조회 -->
+<div class="tab-content" id="tab-fine">
+  <div class="section-title">💰 과태료 · 벌칙 빠른 조회</div>
+
+  <div class="search-bar">
+    <input type="text" id="fine-search" placeholder="위반 행위 또는 법령명 검색..." oninput="filterFines()">
+  </div>
+
+  <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;" id="fine-cat-nav">
+    <button class="cat-btn active" onclick="selectFineCat('전체', this)">📋 전체</button>
+    <button class="cat-btn" onclick="selectFineCat('개인정보보호법', this)">개인정보보호법</button>
+    <button class="cat-btn" onclick="selectFineCat('정보통신망법', this)">정보통신망법</button>
+    <button class="cat-btn" onclick="selectFineCat('신용정보법', this)">신용정보법</button>
+    <button class="cat-btn" onclick="selectFineCat('전자금융거래법', this)">전자금융거래법</button>
+  </div>
+
+  <div style="overflow-x:auto;">
+    <table id="fine-table" style="width:100%;border-collapse:collapse;font-size:13px;">
+      <thead>
+        <tr style="background:#1a1f2e;border-bottom:2px solid #3b82f6;">
+          <th style="padding:12px 16px;text-align:left;color:#60a5fa;white-space:nowrap;">법령</th>
+          <th style="padding:12px 16px;text-align:left;color:#60a5fa;white-space:nowrap;">조항</th>
+          <th style="padding:12px 16px;text-align:left;color:#60a5fa;">위반 행위</th>
+          <th style="padding:12px 16px;text-align:left;color:#60a5fa;white-space:nowrap;">유형</th>
+          <th style="padding:12px 16px;text-align:right;color:#60a5fa;white-space:nowrap;">금액</th>
+        </tr>
+      </thead>
+      <tbody id="fine-tbody"></tbody>
+    </table>
+  </div>
+
+  <div style="margin-top:16px;padding:14px 18px;background:#1a1f2e;border-radius:8px;font-size:12px;color:#64748b;line-height:1.8;">
+    ⚠️ 본 조회표는 참고용입니다. 실제 처분은 위반 경위·횟수·규모 등에 따라 달라질 수 있습니다.<br>
+    📅 기준: 2025년 기준 / 정확한 내용은 <a href="https://www.law.go.kr" target="_blank" style="color:#3b82f6;">law.go.kr</a> 에서 확인하세요.
+  </div>
+</div>
+
+<!-- 탭4: 자격증 -->
+<div class="tab-content" id="tab-cert">
+  <div class="cat-nav">
+    <button class="cat-btn cert-btn active" onclick="selectCertCat('정보보안기사', this)">🏆 정보보안기사</button>
+    <button class="cat-btn cert-btn" onclick="selectCertCat('isms인증심사원', this)">✅ ISMS 인증심사원</button>
+  </div>
+  <div class="search-bar">
+    <input type="text" id="cert-search" placeholder="파일명으로 검색..." oninput="filterCerts()">
+  </div>
+  <div class="upload-guide">
+    💡 GitHub 해당 폴더에 파일을 업로드하면 자동으로 목록에 나타납니다. (30초~1분 소요)<br>
+    👉 <a href="https://github.com/woohaha30/woohaha30.github.io" target="_blank">GitHub 저장소 바로가기 →</a>
+  </div>
+  <div class="file-grid" id="cert-file-grid">
+    <div class="empty-state"><div class="icon">⏳</div><p>불러오는 중...</p></div>
+  </div>
+</div>
+
+<script>
+
+
+// ==================== AI 선택 ====================
+let selectedAI = 'claude';
+
+function setAI(ai) {
+  selectedAI = ai;
+  const claudeBtn = document.getElementById('ai-claude-btn');
+  const geminiBtn = document.getElementById('ai-gemini-btn');
+  if (ai === 'claude') {
+    claudeBtn.style.borderColor = '#f97316';
+    claudeBtn.style.background = '#2d1500';
+    claudeBtn.style.color = '#fb923c';
+    geminiBtn.style.borderColor = '#2d3548';
+    geminiBtn.style.background = '#1e2330';
+    geminiBtn.style.color = '#64748b';
+  } else {
+    geminiBtn.style.borderColor = '#3b82f6';
+    geminiBtn.style.background = '#0d1f3c';
+    geminiBtn.style.color = '#60a5fa';
+    claudeBtn.style.borderColor = '#2d3548';
+    claudeBtn.style.background = '#1e2330';
+    claudeBtn.style.color = '#64748b';
+  }
+}
+
+function goAI(el, query) {
+  const encoded = encodeURIComponent(query);
+  if (selectedAI === 'claude') {
+    // 모바일: claude:// 앱 URL Scheme / PC: claude.ai 웹
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (isMobile) {
+      el.href = 'claude://new?q=' + encoded;
+    } else {
+      el.href = 'https://claude.ai/new?q=' + encoded;
+    }
+  } else {
+    // Gemini는 공식 앱 URL Scheme 없음 → 웹으로 연결
+    el.href = 'https://gemini.google.com/app?q=' + encoded;
+  }
+  return true;
+}
+
+// ==================== 과태료/벌칙 ====================
+const fineData = [
+  // 개인정보보호법 - 과징금
+  { law:'개인정보보호법', article:'제64조의2', act:'개인정보 유출·침해 등 중대한 위반', type:'과징금', amount:'전체 매출액의 3% 이하' },
+  // 개인정보보호법 - 형사처벌
+  { law:'개인정보보호법', article:'제70조', act:'개인정보를 목적 외 제3자 제공 (영리·부정한 목적)', type:'징역/벌금', amount:'5년 이하 징역 또는 5천만원 이하 벌금' },
+  { law:'개인정보보호법', article:'제71조', act:'정보주체 동의 없이 개인정보 수집·이용·제공', type:'징역/벌금', amount:'5년 이하 징역 또는 5천만원 이하 벌금' },
+  { law:'개인정보보호법', article:'제71조', act:'민감정보·고유식별정보 처리 위반', type:'징역/벌금', amount:'5년 이하 징역 또는 5천만원 이하 벌금' },
+  { law:'개인정보보호법', article:'제73조', act:'안전조치 의무 위반으로 개인정보 유출', type:'징역/벌금', amount:'2년 이하 징역 또는 2천만원 이하 벌금' },
+  // 개인정보보호법 - 과태료
+  { law:'개인정보보호법', article:'제75조 제1항', act:'개인정보 처리방침 미수립·미공개', type:'과태료', amount:'최대 1천만원' },
+  { law:'개인정보보호법', article:'제75조 제1항', act:'개인정보보호책임자(CPO) 미지정', type:'과태료', amount:'최대 1천만원' },
+  { law:'개인정보보호법', article:'제75조 제2항', act:'유출 통지·신고 의무 위반', type:'과태료', amount:'최대 3천만원' },
+  { law:'개인정보보호법', article:'제75조 제2항', act:'정보주체 권리 행사 거부·방해', type:'과태료', amount:'최대 3천만원' },
+  { law:'개인정보보호법', article:'제75조 제2항', act:'안전조치 의무 위반', type:'과태료', amount:'최대 3천만원' },
+  { law:'개인정보보호법', article:'제75조 제2항', act:'동의 없이 개인정보 제3자 제공', type:'과태료', amount:'최대 3천만원' },
+  // 정보통신망법
+  { law:'정보통신망법', article:'제76조 제1항', act:'개인정보 보호조치 미이행', type:'과태료', amount:'최대 3천만원' },
+  { law:'정보통신망법', article:'제76조 제1항', act:'유출 통지·신고 의무 위반', type:'과태료', amount:'최대 3천만원' },
+  { law:'정보통신망법', article:'제76조 제3항', act:'기술적·관리적 보호조치 미비', type:'과태료', amount:'최대 1천만원' },
+  { law:'정보통신망법', article:'제71조', act:'이용자 동의 없이 개인정보 수집·이용', type:'징역/벌금', amount:'5년 이하 징역 또는 5천만원 이하 벌금' },
+  { law:'정보통신망법', article:'제72조', act:'불법 스팸 전송', type:'징역/벌금', amount:'3년 이하 징역 또는 3천만원 이하 벌금' },
+  { law:'정보통신망법', article:'제76조', act:'스팸 관련 의무 위반', type:'과태료', amount:'최대 3천만원' },
+  // 신용정보법
+  { law:'신용정보법', article:'제52조', act:'개인신용정보 누설·분실·도난', type:'징역/벌금', amount:'5년 이하 징역 또는 5천만원 이하 벌금' },
+  { law:'신용정보법', article:'제52조', act:'신용정보 목적 외 이용·제공', type:'징역/벌금', amount:'5년 이하 징역 또는 5천만원 이하 벌금' },
+  { law:'신용정보법', article:'제52조의2', act:'개인신용정보 대량 유출', type:'과징금', amount:'위반 금액의 3배 이하 또는 전체 매출액 3%' },
+  { law:'신용정보법', article:'제51조', act:'보안 대책 미수립', type:'과태료', amount:'최대 3천만원' },
+  { law:'신용정보법', article:'제51조', act:'신용정보 유출 미통지', type:'과태료', amount:'최대 3천만원' },
+  // 전자금융거래법
+  { law:'전자금융거래법', article:'제49조', act:'전자금융거래 정보 유출·누설', type:'징역/벌금', amount:'7년 이하 징역 또는 5천만원 이하 벌금' },
+  { law:'전자금융거래법', article:'제49조', act:'접근매체 위·변조', type:'징역/벌금', amount:'7년 이하 징역 또는 5천만원 이하 벌금' },
+  { law:'전자금융거래법', article:'제51조', act:'보안대책 미수립', type:'과태료', amount:'최대 1억원' },
+  { law:'전자금융거래법', article:'제51조', act:'사고 미보고·허위보고', type:'과태료', amount:'최대 1억원' },
+  { law:'전자금융거래법', article:'제51조', act:'이용자 정보보호 의무 위반', type:'과태료', amount:'최대 1천만원' },
+];
+
+let currentFineCat = '전체';
+let filteredFines = [...fineData];
+
+function selectFineCat(cat, btn) {
+  currentFineCat = cat;
+  document.querySelectorAll('#fine-cat-nav .cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('fine-search').value = '';
+  filterFines();
+}
+
+function filterFines() {
+  const q = document.getElementById('fine-search').value.toLowerCase();
+  filteredFines = fineData.filter(f => {
+    const catMatch = currentFineCat === '전체' || f.law === currentFineCat;
+    const qMatch = !q || f.act.includes(q) || f.law.includes(q) || f.article.includes(q) || f.amount.includes(q);
+    return catMatch && qMatch;
+  });
+  renderFines();
+}
+
+function renderFines() {
+  const tbody = document.getElementById('fine-tbody');
+  if (filteredFines.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:#64748b;">검색 결과가 없습니다.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = filteredFines.map((f, i) => {
+    const typeBg = f.type === '과징금' ? '#2d1b00' : f.type === '징역/벌금' ? '#2d0a0a' : '#0a1a2d';
+    const typeColor = f.type === '과징금' ? '#f59e0b' : f.type === '징역/벌금' ? '#f87171' : '#60a5fa';
+    const amountColor = f.type === '징역/벌금' ? '#f87171' : f.type === '과징금' ? '#f59e0b' : '#34d399';
+    const rowBg = i % 2 === 0 ? '#1e2330' : '#1a1f2e';
+    return `<tr style="background:${rowBg};border-bottom:1px solid #2d3548;">
+      <td style="padding:11px 16px;color:#94a3b8;white-space:nowrap;">${f.law}</td>
+      <td style="padding:11px 16px;color:#64748b;white-space:nowrap;font-size:12px;">${f.article}</td>
+      <td style="padding:11px 16px;color:#e2e8f0;line-height:1.5;">${f.act}</td>
+      <td style="padding:11px 16px;white-space:nowrap;">
+        <span style="padding:3px 8px;background:${typeBg};color:${typeColor};border-radius:4px;font-size:11px;font-weight:700;">${f.type}</span>
+      </td>
+      <td style="padding:11px 16px;text-align:right;color:${amountColor};font-weight:600;white-space:nowrap;">${f.amount}</td>
+    </tr>`;
+  }).join('');
+}
+
+const BASE = 'https://woohaha30.github.io';
+const GITHUB_RAW = 'https://raw.githubusercontent.com/woohaha30/woohaha30.github.io/main';
+
+let fileData = null;
+let currentDocCat = '전체';
+let currentCertCat = '정보보안기사';
+let currentIsmsCat = '결함문서';
+
+async function init() {
+  try {
+    const res = await fetch(BASE + '/files.json?t=' + Date.now());
+    fileData = await res.json();
+  } catch(e) {
+    fileData = {
+      "업무문서": { "개인정보보호": [], "정보보호정책": [], "기타": [] },
+      "자격증": { "정보보안기사": [], "isms인증심사원": [] },
+      "isms결함관리": { "결함문서": [], "조치가이드": [] }
+    };
+  }
+  await loadLawDates();
+  renderDocs();
+  renderCerts();
+  renderIsms();
+  renderLaws();
+  renderFines();
+}
+
+function showTab(name, btn) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+// 업무 문서
+function selectDocCat(cat, btn) {
+  currentDocCat = cat;
+  document.querySelectorAll('.cat-btn:not(.cert-btn):not(.isms-btn)').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('doc-search').value = '';
+  renderDocs();
+}
+function filterDocs() { renderDocs(document.getElementById('doc-search').value.toLowerCase()); }
+function renderDocs(query = '') {
+  const grid = document.getElementById('doc-file-grid');
+  if (!fileData) return;
+  let files = [];
+  const docData = fileData['업무문서'] || {};
+  if (currentDocCat === '전체') {
+    for (const [cat, list] of Object.entries(docData)) files.push(...list.map(f => ({ ...f, _cat: cat })));
+  } else {
+    files = (docData[currentDocCat] || []).map(f => ({ ...f, _cat: currentDocCat }));
+  }
+  if (query) files = files.filter(f => f.name.toLowerCase().includes(query));
+  if (files.length === 0) {
+    grid.innerHTML = `<div class="empty-state"><div class="icon">📂</div><p>파일이 없습니다.<br>GitHub에 파일을 올려주세요.</p></div>`;
+    return;
+  }
+  grid.innerHTML = files.map(f => `
+    <div class="file-card" onclick="openFile('${encodeURI(GITHUB_RAW + '/' + f.path)}', '${f.path}')">
+      <div class="file-icon">${getIcon(f.name)}</div>
+      <div class="file-name">${f.name}</div>
+      <span class="file-tag">${f._cat}</span>
+    </div>`).join('');
+}
+
+// 자격증
+function selectCertCat(cat, btn) {
+  currentCertCat = cat;
+  document.querySelectorAll('.cert-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('cert-search').value = '';
+  renderCerts();
+}
+function filterCerts() { renderCerts(document.getElementById('cert-search').value.toLowerCase()); }
+function renderCerts(query = '') {
+  const grid = document.getElementById('cert-file-grid');
+  if (!fileData) return;
+  let files = (fileData['자격증'] || {})[currentCertCat] || [];
+  if (query) files = files.filter(f => f.name.toLowerCase().includes(query));
+  const label = currentCertCat === 'isms인증심사원' ? 'ISMS 인증심사원' : currentCertCat;
+  if (files.length === 0) {
+    grid.innerHTML = `<div class="empty-state"><div class="icon">🎓</div><p>${label} 파일이 없습니다.</p></div>`;
+    return;
+  }
+  grid.innerHTML = files.map(f => `
+    <div class="file-card cert" onclick="openFile('${encodeURI(GITHUB_RAW + '/' + f.path)}', '${f.path}')">
+      <div class="file-icon">${getIcon(f.name)}</div>
+      <div class="file-name">${f.name}</div>
+      <span class="file-tag cert">${label}</span>
+    </div>`).join('');
+}
+
+// ISMS
+function selectIsmsCat(cat, btn) {
+  currentIsmsCat = cat;
+  document.querySelectorAll('.isms-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderIsms();
+}
+function renderIsms() {
+  const grid = document.getElementById('isms-file-grid');
+  if (!fileData) return;
+  const files = ((fileData['isms결함관리'] || {})[currentIsmsCat] || []);
+  if (files.length === 0) {
+    grid.innerHTML = `<div class="empty-state"><div class="icon">📋</div><p>파일이 없습니다.<br>GitHub의 <code>isms결함관리/${currentIsmsCat}/</code> 폴더에 파일을 올려주세요.</p></div>`;
+    return;
+  }
+  grid.innerHTML = files.map(f => `
+    <div class="file-card isms-card" onclick="openFile('${encodeURI(GITHUB_RAW + '/' + f.path)}', '${f.path}')">
+      <div class="file-icon">${getIcon(f.name)}</div>
+      <div class="file-name">${f.name}</div>
+      <span class="file-tag isms">ISMS</span>
+    </div>`).join('');
+}
+
+// 법령 데이터
+const laws = [
+  { name: '개인정보보호법', lawId: '개인정보보호법', tag: '핵심', desc: '개인정보의 수집·이용·제공·관리 및 보호에 관한 기본법. 개인정보처리자의 의무와 정보주체의 권리를 규정합니다.',
+    url: 'https://www.law.go.kr/법령/개인정보보호법', decree: 'https://www.law.go.kr/법령/개인정보보호법시행령' },
+  { name: '정보통신망법', lawId: '정보통신망이용촉진및정보보호등에관한법률', tag: '핵심', desc: '정보통신망의 이용 촉진 및 안전한 이용 환경 조성에 관한 법률. 온라인 개인정보보호, 해킹·악성코드 관련 규정을 포함합니다.',
+    url: 'https://www.law.go.kr/법령/정보통신망이용촉진및정보보호등에관한법률', decree: 'https://www.law.go.kr/법령/정보통신망이용촉진및정보보호등에관한법률시행령' },
+  { name: '신용정보법', lawId: '신용정보의이용및보호에관한법률', tag: '금융', desc: '신용정보의 이용 및 보호에 관한 법률. 금융 분야 개인정보 보호와 신용정보회사의 업무 규정을 담고 있습니다.',
+    url: 'https://www.law.go.kr/법령/신용정보의이용및보호에관한법률', decree: 'https://www.law.go.kr/법령/신용정보의이용및보호에관한법률시행령' },
+  { name: '전자금융거래법', lawId: '전자금융거래법', tag: '금융', desc: '전자금융거래의 법률관계를 명확히 하고 전자금융업의 건전한 발전을 위한 법률입니다.',
+    url: 'https://www.law.go.kr/법령/전자금융거래법', decree: 'https://www.law.go.kr/법령/전자금융거래법시행령' },
+  { name: '전자서명법', lawId: '전자서명법', tag: '보안', desc: '전자서명의 효력 및 전자서명인증사업자에 관한 법률. 공인전자서명 및 인증서 관련 내용을 규정합니다.',
+    url: 'https://www.law.go.kr/법령/전자서명법', decree: 'https://www.law.go.kr/법령/전자서명법시행령' },
+  { name: '정보보호산업법', lawId: '정보보호산업의진흥에관한법률', tag: '보안', desc: '정보보호산업의 진흥에 관한 법률. 정보보호 제품·서비스 인증, 정보보호 전문업체 지정 등을 규정합니다.',
+    url: 'https://www.law.go.kr/법령/정보보호산업의진흥에관한법률', decree: 'https://www.law.go.kr/법령/정보보호산업의진흥에관한법률시행령' },
+  { name: '전자정부법', lawId: '전자정부법', tag: '공공', desc: '행정기관의 전자정부 구현에 관한 법률. 행정정보의 공동이용, 전자민원서비스 등을 포함합니다.',
+    url: 'https://www.law.go.kr/법령/전자정부법', decree: 'https://www.law.go.kr/법령/전자정부법시행령' },
+  { name: '통신비밀보호법', lawId: '통신비밀보호법', tag: '보안', desc: '통신 및 대화 비밀의 보호와 통신제한조치의 요건·절차에 관한 법률입니다.',
+    url: 'https://www.law.go.kr/법령/통신비밀보호법', decree: 'https://www.law.go.kr/법령/통신비밀보호법시행령' },
+  { name: '정보통신기반보호법', lawId: '정보통신기반보호법', tag: '보안', desc: '전자적 침해행위에 대비하여 주요 정보통신기반시설의 보호를 위한 법률입니다.',
+    url: 'https://www.law.go.kr/법령/정보통신기반보호법', decree: 'https://www.law.go.kr/법령/정보통신기반보호법시행령' },
+  { name: '사이버보안기본법', lawId: '사이버보안기본법', tag: '보안', desc: '국가·사회의 사이버 위협에 대한 체계적 대응과 사이버보안 기반 조성을 위한 기본법입니다.',
+    url: 'https://www.law.go.kr/법령/사이버보안기본법', decree: null },
+  { name: '클라우드컴퓨팅법', lawId: '클라우드컴퓨팅발전및이용자보호에관한법률', tag: '공공', desc: '클라우드컴퓨팅 서비스의 이용 촉진 및 산업 발전에 관한 법률. 공공기관 클라우드 도입 근거를 포함합니다.',
+    url: 'https://www.law.go.kr/법령/클라우드컴퓨팅발전및이용자보호에관한법률', decree: 'https://www.law.go.kr/법령/클라우드컴퓨팅발전및이용자보호에관한법률시행령' },
+  { name: '위치정보법', lawId: '위치정보의보호및이용등에관한법률', tag: '개인정보', desc: '위치정보의 수집·이용·제공에 관한 법률. GPS 등 위치정보 처리 시 준수해야 할 사항을 규정합니다.',
+    url: 'https://www.law.go.kr/법령/위치정보의보호및이용등에관한법률', decree: 'https://www.law.go.kr/법령/위치정보의보호및이용등에관한법률시행령' },
+  { name: '저작권법', lawId: '저작권법', tag: '기타', desc: '저작물 및 저작자의 권리를 보호하는 법률. 소프트웨어 라이선스 및 디지털 콘텐츠 보호에 관련됩니다.',
+    url: 'https://www.law.go.kr/법령/저작권법', decree: 'https://www.law.go.kr/법령/저작권법시행령' },
+];
+
+// 개정일 데이터 (laws.json에서 로드)
+let lawDates = {};
+
+async function loadLawDates() {
+  try {
+    const res = await fetch(BASE + '/laws.json?t=' + Date.now());
+    lawDates = await res.json();
+    console.log('laws.json 로드 완료');
+  } catch(e) {
+    console.log('laws.json 없음 - 개정일 미표시');
+  }
+}
+
+function fetchLawDate(lawId) {
+  return lawDates[lawId] || null;
+}
+
+function isRecent(dateStr) {
+  if (!dateStr) return false;
+  const d = new Date(dateStr.replace(/\./g, '-'));
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+  return d >= sixMonthsAgo;
+}
+
+let filteredLaws = [...laws];
+function renderLaws() {
+  document.getElementById('law-grid').innerHTML = filteredLaws.map(l => {
+    const date = fetchLawDate(l.lawId);
+    const recent = isRecent(date);
+    const dateHtml = date
+      ? `<div style="font-size:12px;color:#64748b;margin-bottom:10px;">
+           📅 최근 개정일: <strong style="color:${recent ? '#34d399' : '#94a3b8'}">${date}</strong>
+           ${recent ? '<span style="background:#064e3b;color:#34d399;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:700;margin-left:4px;">🆕 최근개정</span>' : ''}
+         </div>`
+      : '';
+    return `<div class="law-card">
+      <div class="law-card-header">
+        <span class="law-badge">${l.tag}</span>
+        <span class="law-name">${l.name}</span>
+      </div>
+      <div class="law-desc">${l.desc}</div>
+      ${dateHtml}
+      <div class="law-links">
+        <a href="${l.url}" target="_blank" class="law-link">법령 전문 →</a>
+        ${l.decree ? `<a href="${l.decree}" target="_blank" class="law-link decree">시행령 →</a>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+function filterLaws() {
+  const q = document.getElementById('law-search').value.toLowerCase();
+  filteredLaws = laws.filter(l => l.name.includes(q) || l.desc.includes(q) || l.tag.includes(q));
+  renderLaws();
+  renderFines();
+}
+
+function openFile(url, path) {
+  // html 파일은 GitHub Pages에서 직접 렌더링되는 URL로 열기
+  if (path && (path.toLowerCase().endsWith('.html') || path.toLowerCase().endsWith('.htm'))) {
+    window.open('https://woohaha30.github.io/' + path, '_blank');
+  } else {
+    window.open(url, '_blank');
+  }
+}
+function getIcon(name) {
+  const ext = name.split('.').pop().toLowerCase();
+  return { pdf:'📄', hwp:'📝', hwpx:'📝', docx:'📝', doc:'📝', xlsx:'📊', xls:'📊', pptx:'📊', ppt:'📊', txt:'📃', html:'🌐', htm:'🌐' }[ext] || '📎';
+}
+
+init();
+</script>
+</body>
+</html>
+<!-- 이 파일은 수정용으로 사용하지 않음 -->
